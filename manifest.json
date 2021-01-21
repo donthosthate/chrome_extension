@@ -1,21 +1,26 @@
 {
-  "name": "Don't Host Hate",
-  "version": "0.1",
-  "description": "An extension to help identify hosting and other service providers in order to take down hateful and violent websites.",
-  "permissions": ["activeTab", "declarativeContent", "storage"],
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
-  "page_action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "images/get_started16.png",
-      "32": "images/get_started32.png",
-      "48": "images/get_started48.png",
-      "128": "images/get_started128.png"
-    }
-  },
-  "options_page": "options.html",
-  "manifest_version": 2
+    "manifest_version": 2,
+    "name":    "Don't Host Hate",
+    "version": "0.0",
+    "offline_enabled": false,
+
+    "background": {
+        "persistent": true,
+        "scripts": ["background.js"]
+    },
+
+    "page_action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/donthosthate_16.png",
+        "32": "images/donthosthate_32.png",
+        "48": "images/donthosthate_48.png",
+        "128": "images/donthosthate_128.png"
+      }
+    },
+
+    "permissions": [
+        "webRequest",
+        "*://*/*"
+    ]
 }
