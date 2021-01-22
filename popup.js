@@ -1,4 +1,7 @@
 let providerList = document.getElementById('providerList');
+let providerCaption = document.getElementById('knownCaption');
+let unknownList = document.getElementById('unknownList');
+let unknownCaption = document.getElementById('unknownCaption');
 let providers = new Map();
 
 // spreadsheet location from url
@@ -36,7 +39,7 @@ function sortProviders() {
   // go through the remaining rows of the spreadsheet and parse 'em
   spreadsheet_data.slice(1).map(function(provider, i) {
     var ulNode = document.createElement("li");
-    var providerNode = `<b>${provider[name_col]}</b> (${provider[provides_col]}): <a href="${provider[tos_col]}#:~:text=${escape(provider[clause_col])}">Terms of Service</a> and <a href="${provider[contact_col]}">contact</a>`
+    var providerNode = `<b>${provider[name_col]}</b> (${provider[provides_col]}): <a href="${provider[tos_col]}#:~:text=${escape(provider[clause_col])}">Terms of Service</a> and <a href="${provider[contact_col]}">abuse contact</a>`
     // how to highlight text in Chrome: url...bla#:~:text=escaped%20text
     ulNode.innerHTML = providerNode;
 
@@ -52,16 +55,33 @@ function sortProviders() {
   });
 }
 
+function createBareListItem(url) {
+  var ulNode = document.createElement("li");
+  ulNode.innerHTML = `<a href="${url}">${url}</a>`
+  return ulNode;
+}
+
 // take some tlds and actually display them in the thing
 function displayProviders(tlds) {
+  // clear the providersList
+  providerList.textContent = '';
   if (typeof tlds !== 'undefined') {
     for (var i = 0; i < tlds.length; i++) {
       if (providers.has(tlds[i])) {
         providerList.appendChild(providers.get(tlds[i]));
+      } else {
+        unknownList.appendChild(createBareListItem(tlds[i]));
       }
     }
+    // once we look at all the tlds, we need to flag for the user if something wasn't found.
+    if (providerList.childElementCount == 0) {
+      providerCaption.innerHTML = "I didn't detect any known providers."
+    }
+    if (unknownList.childElementCount > 0) {
+      unknownCaption.innerHTML = "Unknown service providers (cookies? other?):";
+    }
   } else {
-    providerList.innerHTML = "this website seems to host itself!!!! OMG"
+    providerList.innerHTML = "I didn't detect anything. Try reloading the page to try again."
   }
 }
 
