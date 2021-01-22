@@ -4,6 +4,16 @@ var activeTabs = {};
 /* Track the TLDs loaded by any of the active tabs */
 var activeTabsLoadedURLs = new Map();
 
+/*
+Standardize the way we clean URL strings ...
+In particular, I want to use the TLD and none of the optional pre-stuff.
+*/
+function cleanUrlString(urlString) {
+  var url = new URL(urlString).hostname;
+  var bits = url.split('.')
+  return bits.splice(bits.length - 2).join('.')
+}
+
 /* Listen for when we activate a new tab */
 chrome.tabs.onActivated.addListener(function(details) {
     activeTabs[details.windowId] = details.tabId;
@@ -16,23 +26,20 @@ chrome.windows.onRemoved.addListener(function(winId) {
 
 /* Listen for web-requests and filter them */
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
-    if (details.tabId == -1) {
-        console.log("Skipping request from non-tabbed context...");
+    if (details.tabId == -1 || !details.initiator || !details.initiator.startsWith("http")) {
+        //console.log("Skipping request from non-tabbed or non-web context...");
         return;
     }
 
+    // not interesting unless the tab is active
     var notInteresting = Object.keys(activeTabs).every(function(key) {
         if (activeTabs[key] == details.tabId) {
             /* We are interested in this request */
-            console.log("Check this out: ", details);
-            hostname_requestor = new URL(details.initiator).hostname;
-            hostname_requested = new URL(details.url).hostname;
-            if (activeTabsLoadedURLs.has(hostname_requestor)) {
-              activeTabsLoadedURLs.get(hostname_requestor).push(hostname_requested);
-            }
-            else {
-              activeTabsLoadedURLs.set(hostname_requestor, [hostname_requested]);
-            }
+            // log the request
+            //console.log("Check this out: ", details);
+            hostname_requestor = cleanUrlString(details.initiator);
+            hostname_requested = cleanUrlString(details.url);
+            addToActiveTabs(hostname_requestor, hostname_requested);
             return false;
         } else {
             return true;
@@ -53,57 +60,84 @@ chrome.tabs.query({ active: true }, function(tabs) {
     console.log("activeTabs = ", activeTabs);
 });
 
-//for sending a message
-//chrome.runtime.sendMessage({tlds: ["shopify.com","wp.com"]}, function(response) {});
-
-
-function messageReceived(msg) {
-   console.log("message received from popup!", msg);
-   // tabOfInterest: tablink
-   // we want to send back all the websites we have found that were loaded by this link's TLD
-   // for now, we send a test message...
-   tldsOfInterest = {"tlds": ["shopify.com","wp.com"]};
-   chrome.runtime.sendMessage(tldsOfInterest, function(response) {return true;});
-   console.log("message sent to popup!", tldsOfInterest);
-   return true;
+// send back all the info once it's got
+function sendPopupAllInfoAboutURL(url, port) {
+    // we want to send back all the websites we have found that were loaded by this link's TLD
+    loadedByTLD = activeTabsLoadedURLs.get(url)
+    uniqueLoadedByTLD = [...new Set(loadedByTLD)]
+    tldsOfInterest = {"tlds": uniqueLoadedByTLD};
+    port.postMessage(tldsOfInterest);
+    console.log("message sent to popup!", tldsOfInterest);
 }
 
+// from stackoverflow
+var parseXml;
+if (typeof window.DOMParser != "undefined") {
+    parseXml = function(xmlStr) {
+        return ( new window.DOMParser() ).parseFromString(xmlStr, "text/xml");
+    };
+} else if (typeof window.ActiveXObject != "undefined" &&
+       new window.ActiveXObject("Microsoft.XMLDOM")) {
+    parseXml = function(xmlStr) {
+        var xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
+        xmlDoc.async = "false";
+        xmlDoc.loadXML(xmlStr);
+        return xmlDoc;
+    };
+} else {
+    throw new Error("No XML parser found");
+}
+
+// add something to the active tabs tracker map list thing
+function addToActiveTabs(tab_url, url_to_add) {
+  if (activeTabsLoadedURLs.has(tab_url)) {
+    activeTabsLoadedURLs.get(tab_url).push(url_to_add);
+  }
+  else {
+    activeTabsLoadedURLs.set(tab_url, [url_to_add]);
+  }
+}
+
+// this will let us whois a domain
+function whoisAsync(theUrl, callback)
+{
+    var WHOISAPIKEY = "at_17WvJwRnLT3yghrTBokJUTjsn98Sy"
+    var whoisURL = `https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=${WHOISAPIKEY}&domainName=${theUrl}`
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+          callback(parseXml(xmlHttp.responseText))
+        }
+    }
+    xmlHttp.open("GET", whoisURL, true); // true for asynchronous
+    xmlHttp.send(null);
+}
+
+//for receiving and responding to a message
 chrome.extension.onConnect.addListener(function(port) {
       console.log("Connected to popup");
       port.onMessage.addListener(function(msg) {
         console.log("message received from popup!", msg);
+
         // tabOfInterest: tablink
-        // we want to send back all the websites we have found that were loaded by this link's TLD
-        // for now, we send a test message...
-        tldsOfInterest = {"tlds": ["shopify.com","wp.com"]};
-        port.postMessage(tldsOfInterest);
-        console.log("message sent to popup!", tldsOfInterest);
+        strippedLink = cleanUrlString(msg['tabOfInterest']);
+
+        // we also need to whois the requestor to get the domain registrar
+        whoisAsync(strippedLink, function(strippedLink, port, xml) {
+          // we only actually care about the registering company
+          // horrifyingly, this is not in tagged HTML but rather in a "rawText" block >:(
+          console.log("xml I received: ", xml)
+          var rawtexts = xml.getElementsByTagName("rawText")
+          var DESIRED_TAG = /Registrar URL: (?<URL>.*?)\n/
+          for (let item of rawtexts) {
+              var leMatch = item.innerHTML.match(DESIRED_TAG)
+              if (leMatch) {
+                var registrarURL = cleanUrlString(leMatch.groups["URL"]);
+                addToActiveTabs(strippedLink, registrarURL);
+                break;
+              }
+          }
+          sendPopupAllInfoAboutURL(strippedLink, port)
+        }.bind(null, strippedLink, port));
       });
  })
-
-
-//for listening any message which comes from runtime
-chrome.runtime.onMessage.addListener(messageReceived);
-
-// chrome.devtools.network.getHAR(function(result) {
-//   var entries = result.entries;
-//   if (!entries.length) {
-//     console.warn("Reload the page to get all the entries!");
-//   }
-//   for (var i = 0; i < entries.length; ++i)
-//     //DontHostHate.handleHARs(entries[i]);
-//
-//     chrome.devtools.network.onRequestFinished.addListener(
-//       function(request) {
-//         if (request.response.bodySize > 40*1024) {
-//           chrome.devtools.inspectedWindow.eval(
-//               'console.log("Large image: " + unescape("' +
-//               escape(request.request.url) + '"))');
-//         } else {
-//           chrome.devtools.inspectedWindow.eval(
-//               'console.log("smol thing : " + unescape("' +
-//               escape(request.request.url) + '"))');
-//         }
-//       }
-//     );
-// });

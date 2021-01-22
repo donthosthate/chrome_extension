@@ -54,11 +54,14 @@ function sortProviders() {
 
 // take some tlds and actually display them in the thing
 function displayProviders(tlds) {
-  console.log(providers);
-  for (var i = 0; i < tlds.length; i++) {
-    if (providers.has(tlds[i])) {
-      providerList.appendChild(providers.get(tlds[i]));
+  if (typeof tlds !== 'undefined') {
+    for (var i = 0; i < tlds.length; i++) {
+      if (providers.has(tlds[i])) {
+        providerList.appendChild(providers.get(tlds[i]));
+      }
     }
+  } else {
+    providerList.innerHTML = "this website seems to host itself!!!! OMG"
   }
 }
 
