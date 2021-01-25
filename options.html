@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Don't Host Hate Extension Options</title>
+  <style>
+    #content {
+      max-width: 650px;
+      min-width: 300px;
+      border: thick double cornflowerblue;
+      padding: 15px;
+      position: absolute;
+      left: 25%;
+      right: 25%;
+    }
+    h1 {
+      text-align: center;
+      color: cornflowerblue;
+    }
+    figure {
+      margin:0px;
+      margin-top:3px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input {
+      width: 350px;
+    }
+    button {
+      width: 50%;
+      background-color: cornflowerblue;
+      color: white;
+      font-weight: bold;
+      padding: 4px;
+      position: relative;
+      left: 25%;
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h1>#DontHostHate Extension Options</h1>
+
+    <label for="googleapi">Google API key:</label>
+    <input type="text" id="googleapi" name="googleapi"><br/>
+    <small>
+      We have curated a list of "known providers"---domain registrars, hosting providers, payment providers, and other services---along with links to their Terms of Service, relevant terms, and abuse contact procedures. You can reference <a href="https://docs.google.com/spreadsheets/d/1lklFq55OkWwbzsc0X52yqhlJYxRncwVhKFjnZ1-JPV8/edit#gid=236743220">this list for free at any time</a>. One optional feature of this extension will correlate this spreadsheet with the data detected on a particular website so you don't have to do it yourself.<br/><br/>
+      In order to identify known providers, you must add a Google Spreadsheets API key. To use this feature, please follow <a href="https://developers.google.com/sheets/api/guides/authorizing#APIKey">Google's instructions for acquiring an API key</a>. Note that you want an API key, not an OAuth token. This is free (and optional!). I recommend that on the page "Restrict and Rename API key" you set Application Restrictions to "HTTP referrers" and "API restrictions" to "Restrict key -> Google Sheets API".<br/><br/>
+      This key will be stored in your Google Chrome profile and will only be used by you.
+    </small>
+    <br/>
+
+    <br/><br/>
+
+    <label for="whoisapi">WhoIs API key:</label>
+    <input type="text" id="whoisapi" name="whoisapi"><br/>
+    <small>
+      Whois is a tool used to identify domain registrars. An excellent online API is available from <a href="https://www.whoisxmlapi.com">whoisxmlapi.com</a>. You can register to get a free API key by clicking "get started free". This extension will work without the whois api, but it will not be able to identify the domain registrar of a website.<br/><br/>
+      This key will be stored in your Google Chrome profile and will only be used by you.
+    </small>
+    <br/>
+
+    <br/><br/>
+
+    <div id="status"></div>
+    <button id="save">Save</button>
+
+    <br/><br/>
+    <small>Source code for this extension is available <a href="https://github.com/donthosthate/chrome_extension">on github</a>.
+  </div>
+
+<script src="options.js"></script>
+</body>
+</html>

@@ -19,10 +19,13 @@
       }
     },
 
+    "options_page": "options.html",
+
     "permissions": [
         "webRequest",
         "tabs",
         "activeTab",
-        "*://*/*"
+        "*://*/*",
+        "storage"
     ]
 }
