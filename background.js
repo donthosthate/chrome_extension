@@ -1,3 +1,6 @@
+// library for parsing domain names / tlds
+import './psl.min.js';
+
 /* Keep track of the active tab in each window */
 var activeTabs = {};
 
@@ -9,9 +12,9 @@ Standardize the way we clean URL strings ...
 In particular, I want to use the TLD and none of the optional pre-stuff.
 */
 function cleanUrlString(urlString) {
-  var url = new URL(urlString).hostname;
-  var bits = url.split('.')
-  return bits.splice(bits.length - 2).join('.')
+  var strippedEnd = new URL(urlString).hostname;
+  var parsed = psl.parse(strippedEnd);
+  return parsed.domain;
 }
 
 /* Listen for when we activate a new tab */
@@ -36,10 +39,10 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
         if (activeTabs[key] == details.tabId) {
             /* We are interested in this request */
             // log the request
-            //console.log("Check this out: ", details);
-            hostname_requestor = cleanUrlString(details.initiator);
-            hostname_requested = cleanUrlString(details.url);
+            var hostname_requestor = cleanUrlString(details.initiator);
+            var hostname_requested = cleanUrlString(details.url);
             addToActiveTabs(hostname_requestor, hostname_requested);
+            console.log(hostname_requestor, ':', hostname_requested);
             return false;
         } else {
             return true;
@@ -63,9 +66,9 @@ chrome.tabs.query({ active: true }, function(tabs) {
 // send back all the info once it's got
 function sendPopupAllInfoAboutURL(url, port, extra_json = {}) {
     // we want to send back all the websites we have found that were loaded by this link's TLD
-    loadedByTLD = activeTabsLoadedURLs.get(url)
-    uniqueLoadedByTLD = [...new Set(loadedByTLD)]
-    tldsOfInterest = {"tlds": uniqueLoadedByTLD};
+    var loadedByTLD = activeTabsLoadedURLs.get(url)
+    var uniqueLoadedByTLD = [...new Set(loadedByTLD)]
+    var tldsOfInterest = {"tlds": uniqueLoadedByTLD};
     // merge if there are extra jsons
     Object.keys(extra_json).forEach(key => tldsOfInterest[key] = extra_json[key]);
     // send to popup
@@ -123,7 +126,7 @@ chrome.extension.onConnect.addListener(function(port) {
         console.log("message received from popup!", msg);
 
         // tabOfInterest: tablink
-        strippedLink = cleanUrlString(msg['tabOfInterest']);
+        var strippedLink = cleanUrlString(msg['tabOfInterest']);
 
         if (WHOISAPIKEY == '') {
           tryForKey();
@@ -162,3 +165,4 @@ function tryForKey() {
      WHOISAPIKEY = items.whoisapi;
    });
 }
+tryForKey();

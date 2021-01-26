@@ -49,7 +49,7 @@ function getProvidersList(sendMessage = true) {
 function spreadsheetGetFail() {
   // if the user didn't add an api key yet, we can't really use the spreadsheet providers, so warn and skip
   var ulNode = document.createElement("li");
-  ulNode.innerHTML = "<div class='red'>Error with google spreadsheet key! Can't detect known providers. See extension options for more info.</div>";
+  ulNode.innerHTML = "<div class='warn'>Error with google spreadsheet key! Can't detect known providers. See extension options for more info.</div>";
   providerList.innerHTML = "";
   providerList.appendChild(ulNode)
 }
@@ -67,7 +67,12 @@ function sortProviders() {
   // go through the remaining rows of the spreadsheet and parse 'em
   spreadsheet_data.slice(1).map(function(provider, i) {
     var ulNode = document.createElement("li");
-    var providerNode = `<b>${provider[name_col]}</b> (${provider[provides_col]}): <a href="${provider[tos_col]}#:~:text=${escape(provider[clause_col])}" target="_blank">Terms of Service</a> and <a href="${provider[contact_col]}" target="_blank">abuse contact</a>`
+    var providerNode = ''
+    if (provider[contact_col]) {
+      providerNode = `<b>${provider[name_col]}</b> (${provider[provides_col]}): <a href="${provider[tos_col]}#:~:text=${escape(provider[clause_col])}" target="_blank">Terms of Service</a> and <a href="${provider[contact_col]}" target="_blank">abuse contact</a>`
+    } else {
+      providerNode = `<b>${provider[name_col]}</b> (${provider[provides_col]}): <a href="${provider[tos_col]}#:~:text=${escape(provider[clause_col])}" target="_blank">Terms of Service</a>`
+    }
     // how to highlight text in Chrome: url...bla#:~:text=escaped%20text
     ulNode.innerHTML = providerNode;
 
@@ -120,7 +125,7 @@ function messageReceived(msg) {
   // if we got an error, show it
   if (msg.error) {
     var ulNode = document.createElement("li");
-    ulNode.innerHTML = "<div class='red'>" + msg.error + "</div>";
+    ulNode.innerHTML = "<div class='warn'>" + msg.error + "</div>";
     providerList.appendChild(ulNode);
   }
   return true;
