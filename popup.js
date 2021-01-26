@@ -49,7 +49,7 @@ function getProvidersList(sendMessage = true) {
 function spreadsheetGetFail() {
   // if the user didn't add an api key yet, we can't really use the spreadsheet providers, so warn and skip
   var ulNode = document.createElement("li");
-  ulNode.innerHTML = "<div class='warn'>Error with google spreadsheet key! Can't detect known providers. See extension options for more info.</div>";
+  ulNode.innerHTML = "<div class='warn'>Error with google spreadsheet key! Can't detect known providers. See extension options for more info, or use <a href='https://docs.google.com/spreadsheets/d/1lklFq55OkWwbzsc0X52yqhlJYxRncwVhKFjnZ1-JPV8/edit#gid=236743220'>our spreadsheet</a> for provider details and contact</div>";
   providerList.innerHTML = "";
   providerList.appendChild(ulNode)
 }
