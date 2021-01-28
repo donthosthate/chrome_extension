@@ -40,6 +40,21 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
             /* We are interested in this request */
             // log the request
             var hostname_requestor = cleanUrlString(details.initiator);
+            if (['google.com',
+                 'bing.com',
+                 'duckduckgo.com',
+                 'yandex.com',
+                 'swisscows.com',
+                 'startpage.com',
+                 'yahoo.com',
+                 'searchencrypt.com',
+                 'onesearch.com',
+                 'facebook.com',
+                 'reddit.com'
+               ].includes(hostname_requestor)) {
+              // it's a search engine or forum or something. don't track this.
+              return false;
+            }
             var hostname_requested = cleanUrlString(details.url);
             addToActiveTabs(hostname_requestor, hostname_requested);
             console.log(hostname_requestor, ':', hostname_requested);
@@ -48,20 +63,7 @@ chrome.webRequest.onBeforeRequest.addListener(function(details) {
             return true;
         }
     });
-
-    if (notInteresting) {
-        /* We are not interested in this request */
-        //console.log("Just ignore this one:", details);
-    }
 }, { urls: ["<all_urls>"] });
-
-/* Get the active tabs in all currently open windows */
-chrome.tabs.query({ active: true }, function(tabs) {
-    tabs.forEach(function(tab) {
-        activeTabs[tab.windowId] = tab.id;
-    });
-    console.log("activeTabs = ", activeTabs);
-});
 
 // send back all the info once it's got
 function sendPopupAllInfoAboutURL(url, port, extra_json = {}) {

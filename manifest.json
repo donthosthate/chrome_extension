@@ -22,10 +22,9 @@
     "options_page": "options.html",
 
     "permissions": [
+        "storage",
         "webRequest",
-        "tabs",
-        "activeTab",
-        "*://*/*",
-        "storage"
+        "http://*/*",
+        "https://*/*"
     ]
 }
