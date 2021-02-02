@@ -14,7 +14,14 @@ In particular, I want to use the TLD and none of the optional pre-stuff.
 function cleanUrlString(urlString) {
   var strippedEnd = new URL(urlString).hostname;
   var parsed = psl.parse(strippedEnd);
-  return parsed.domain;
+  var domain = parsed.domain;
+  // some of them don't work totally properly... specifically I've seen issues with cloudflare and googleapis
+  if (domain.endsWith("cloudflare.com")) {
+    domain = "cloudflare.com";
+  } if (domain.endsWith("googleapis.com")) {
+    domain = "googleapis.com";
+  }
+  return domain;
 }
 
 /* Listen for when we activate a new tab */

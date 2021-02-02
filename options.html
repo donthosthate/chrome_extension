@@ -57,7 +57,8 @@
     <input type="text" id="googleapi" name="googleapi"><br/>
     <small>
       We have curated a list of "known providers"---domain registrars, hosting providers, payment providers, and other services---along with links to their Terms of Service, relevant terms, and abuse contact procedures. You can reference <a href="https://docs.google.com/spreadsheets/d/1lklFq55OkWwbzsc0X52yqhlJYxRncwVhKFjnZ1-JPV8/edit#gid=236743220">this list for free at any time</a>. One optional feature of this extension will correlate this spreadsheet with the data detected on a particular website so you don't have to do it yourself.<br/><br/>
-      In order to identify known providers, you must add a Google Spreadsheets API key. To use this feature, please follow <a href="https://developers.google.com/sheets/api/guides/authorizing#APIKey">Google's instructions for acquiring an API key</a>. Note that you want an API key, not an OAuth token. This is free (and optional!). I recommend that on the page "Restrict and Rename API key" you set Application Restrictions to "HTTP referrers" and "API restrictions" to "Restrict key -> Google Sheets API".<br/><br/>
+      In order to identify known providers, you must add a Google Spreadsheets API key. To use this feature, please follow <a href="https://developers.google.com/sheets/api/guides/authorizing#APIKey">Google's instructions for acquiring an API key</a>. Note that you want an API key, not an OAuth token. This is free (and optional!).<br/><br/>
+      To configure your key, go to "Dashboard" (left side) and "Enable APIs and Services" (top middle) and enable the "Google Sheets API". I recommend that on the page "Restrict and Rename API key" ("Credentials" (left side), click on key you created) you set Application Restrictions to "HTTP referrers" and "API restrictions" to "Restrict key -> Google Sheets API". Copy your key into the box.<br/><br/>
       This key will be stored in your Google Chrome profile and will only be used by you.
     </small>
     <br/>
@@ -67,7 +68,7 @@
     <label for="whoisapi">WhoIs API key:</label>
     <input type="text" id="whoisapi" name="whoisapi"><br/>
     <small>
-      Whois is a tool used to identify domain registrars. An excellent online API is available from <a href="https://www.whoisxmlapi.com">whoisxmlapi.com</a>. You can register to get a free API key by clicking "get started free". This extension will work without the whois api, but it will not be able to identify the domain registrar of a website.<br/><br/>
+      Whois is a tool used to identify domain registrars. An excellent online API is available from <a href="https://www.whoisxmlapi.com">whoisxmlapi.com</a>. You can register to get a free API key by clicking "get started free". You will then need to confirm your email address and return to <a href="https://user.whoisxmlapi.com/products">your products</a>, then copy the key at the top into the box. This extension will work without the whois api, but it will not be able to identify the domain registrar of a website.<br/><br/>
       This key will be stored in your Google Chrome profile and will only be used by you.
     </small>
     <br/>
